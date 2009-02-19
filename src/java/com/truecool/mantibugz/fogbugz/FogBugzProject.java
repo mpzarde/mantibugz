@@ -3,6 +3,7 @@ package com.truecool.mantibugz.fogbugz;
 import org.mantisbt.connect.AccessLevel;
 import org.mantisbt.connect.model.IMCAttribute;
 import org.mantisbt.connect.model.IProject;
+import org.mantisbt.connect.model.MCAttribute;
 
 import java.util.Map;
 
@@ -20,19 +21,19 @@ public class FogBugzProject implements IProject {
   }
 
   public AccessLevel getAccessLevelMin() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return AccessLevel.ANYBODY;
   }
 
   public String getDescription() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return getName();
   }
 
   public boolean isEnabled() {
-    return false;  //To change body of implemented methods use File | Settings | File Templates.
+    return true;
   }
 
   public String getFilePath() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return null;
   }
 
   public long getId() {
@@ -44,15 +45,15 @@ public class FogBugzProject implements IProject {
   }
 
   public IMCAttribute getStatus() {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+    return new MCAttribute(0, "NONE");
   }
 
   public IProject[] getSubProjects() {
-    return new IProject[0];  //To change body of implemented methods use File | Settings | File Templates.
+    return new IProject[0];
   }
 
   public boolean isPrivate() {
-    return false;  //To change body of implemented methods use File | Settings | File Templates.
+    return false;
   }
 
   public void setAccessLevelMin(AccessLevel accessLevel) {
