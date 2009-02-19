@@ -107,6 +107,7 @@ public class MantisConnection implements IConnection {
 
   public Result createNewIssue(IIssue issue) throws Exception {
     // @TODO - empty implementation for now
+    //
     return null;
   }
 
