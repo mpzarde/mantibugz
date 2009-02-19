@@ -28,6 +28,8 @@ public class MantisConnection implements IConnection {
   private IMCSession _session;
   private boolean _connected;
 
+  private IProject _currentProject;
+
   public MantisConnection() {
     this._connected = false;
   }
@@ -111,6 +113,14 @@ public class MantisConnection implements IConnection {
     return null;
   }
 
+
+  public IProject getCurrentProject() {
+    return _currentProject;
+  }
+
+  public void setCurrentProject(IProject currentProject) {
+    _currentProject = currentProject;
+  }
 
   public boolean isConnected() {
     return _connected;

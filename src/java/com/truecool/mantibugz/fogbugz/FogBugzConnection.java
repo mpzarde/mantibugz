@@ -32,6 +32,8 @@ public class FogBugzConnection implements IConnection {
   private String _token;
   private boolean _connected;
 
+  private IProject _currentProject;
+
   public FogBugzConnection() {
   }
 
@@ -97,6 +99,14 @@ public class FogBugzConnection implements IConnection {
 
   public Result createNewIssue(IIssue issue) throws Exception {
     return null;  //To change body of implemented methods use File | Settings | File Templates.
+  }
+
+  public IProject getCurrentProject() {
+    return _currentProject;
+  }
+
+  public void setCurrentProject(IProject currentProject) {
+    _currentProject = currentProject;
   }
 
   public boolean isConnected() {
