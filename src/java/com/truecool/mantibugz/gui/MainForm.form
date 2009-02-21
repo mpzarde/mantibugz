@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="com.truecool.mantibugz.gui.MainForm">
-  <grid id="27dc6" binding="_mainPanel" custom-create="true" layout-manager="FormLayout">
-    <rowspec value="top:288px:grow"/>
+  <grid id="27dc6" binding="_mainPanel" layout-manager="FormLayout">
+    <rowspec value="fill:288px:grow"/>
     <rowspec value="top:3dlu:noGrow"/>
     <rowspec value="center:max(d;4px):noGrow"/>
     <colspec value="fill:d:grow"/>
@@ -242,7 +242,7 @@
                     </constraints>
                     <properties/>
                   </component>
-                  <component id="ff12a" class="javax.swing.JButton" binding="_connectButton" default-binding="true">
+                  <component id="ff12a" class="javax.swing.JButton" binding="_fogBugzConnectButton">
                     <constraints>
                       <grid row="8" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
                       <forms/>
@@ -300,14 +300,14 @@
               <splitpane position="right"/>
             </constraints>
             <properties/>
-            <border type="none"/>
+            <border type="etched" title="Issues"/>
             <children>
-              <scrollpane id="772dd">
+              <scrollpane id="772dd" binding="_mantisIssuesPane" custom-create="true">
                 <constraints border-constraint="Center"/>
                 <properties/>
                 <border type="none"/>
                 <children>
-                  <component id="c9c9a" class="javax.swing.JTable" binding="_mantisIssues">
+                  <component id="c9c9a" class="javax.swing.JTable" binding="_mantisIssues" custom-create="true">
                     <constraints/>
                     <properties/>
                   </component>
@@ -319,4 +319,7 @@
       </splitpane>
     </children>
   </grid>
+  <inspectionSuppressions>
+    <suppress inspection="NoLabelFor" id="772dd"/>
+  </inspectionSuppressions>
 </form>
