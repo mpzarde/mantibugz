@@ -22,7 +22,7 @@ import java.util.List;
 public class MantisConnection implements IConnection {
 
   private String _baseURL;
-  private String _soapAccessPoint;
+  private String _soapAccessPoint = "api/soap/mantisconnect.php";
   private String _uid;
   private String _pwd;
   private IMCSession _session;

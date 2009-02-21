@@ -21,7 +21,11 @@ public class ProjectIssuesTableModel extends AbstractTableModel {
 
   public void setIssues(List<IIssue> issues) {
     _issues = issues;
-    super.fireTableDataChanged();
+    fireTableDataChanged();
+  }
+
+  public List<IIssue> getIssues() {
+    return _issues;
   }
 
   public int getRowCount() {

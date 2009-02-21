@@ -5,7 +5,7 @@ import org.mantisbt.connect.model.IIssue;
 import org.mantisbt.connect.model.IProject;
 
 import javax.swing.*;
-import javax.swing.event.TableModelEvent;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,12 +16,9 @@ import java.util.List;
  * User: mpzarde
  * Date: Feb 18, 2009
  * Time: 4:59:28 PM
- * To change this template use File | Settings | File Templates.
  */
 public class MainForm {
   private JPanel _mainPanel;
-  private JPanel _connectionsPanel;
-  private JPanel _issuesPanel;
   private JTextField _mantisURL;
   private JTextField _fogBugzURL;
   private JTextField _fogBugzUid;
@@ -35,15 +32,16 @@ public class MainForm {
   private JLabel _fogBugzStatus;
   private JComboBox _mantisProject;
   private JComboBox _fogBugzProject;
-  private JButton _goButton;
   private JTable _mantisIssues;
   private JScrollPane _mantisIssuesPane;
+  private JButton _goButton;
 
   private MantiBugzController _controller;
 
   public MainForm(MantiBugzController controller) {
-    createUIComponents();
     _controller = controller;
+
+    initializeUIComponents();
 
     _mantisConnectButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent actionEvent) {
@@ -66,12 +64,30 @@ public class MainForm {
         });
       }
     });
+    _goButton.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        runFogBugzImport();
+      }
+    });
   }
 
-  private void createUIComponents() {
-    _mantisIssues = new JTable(new ProjectIssuesTableModel());
-    _mantisIssuesPane = new JScrollPane(_mantisIssues);
-    _mantisIssues.setPreferredScrollableViewportSize(new Dimension(450, 400));
+  /**
+   * Components were already created, we're just resetting column sizes and stuff
+   */
+  private void initializeUIComponents() {
+    ProjectIssuesTableModel model = new ProjectIssuesTableModel();
+
+    _mantisIssues.setModel(model);
+
+    TableColumnModel columnModel = _mantisIssues.getColumnModel();
+    columnModel.getColumn(0).setPreferredWidth(50);
+    columnModel.getColumn(1).setPreferredWidth(325);
+    columnModel.getColumn(2).setPreferredWidth(75);
+
+    _mantisIssuesPane.setViewportView(_mantisIssues);
+
+    setData(_controller);
+
   }
 
   public void setData(MantiBugzController controller) {
@@ -177,9 +193,14 @@ public class MainForm {
 
   private void updateIssuesTable() {
 
+    Cursor hourglassCursor = Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR);
+    Cursor normalCursor = Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR);
+
     getData(_controller);
 
     try {
+
+      getRootContainer().getParent().setCursor(hourglassCursor);
 
       String selectedProjectName = (String) _mantisProject.getSelectedItem();
       IProject selectedProject = null;
@@ -198,18 +219,23 @@ public class MainForm {
 
         if (selectedProject != null) {
           List<IIssue> issues = _controller.getMantisConnection().getIssues(selectedProject);
-          ProjectIssuesTableModel issuesModel = (ProjectIssuesTableModel) _mantisIssues.getModel();
-          issuesModel.setIssues(issues);
-          _mantisIssues.tableChanged(new TableModelEvent(issuesModel));
-          _mantisIssues.repaint();
+
+          ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
+          model.setIssues(issues);
           _mantisIssuesPane.setViewportView(_mantisIssues);
-          System.out.println("Model updated...loaded " + issues.size() + " issues.");
         }
       }
+
     } catch (Exception e) {
       // @todo add logging
       JOptionPane.showMessageDialog(null, "An error occured trying to retrieve Mantis project issues, pls check your settings and try again.");
+    } finally {
+      getRootContainer().getParent().setCursor(normalCursor);
     }
+  }
+
+  private void runFogBugzImport() {
+
   }
 
 }
