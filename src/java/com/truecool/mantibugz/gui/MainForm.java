@@ -9,6 +9,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,8 +36,10 @@ public class MainForm {
   private JTable _mantisIssues;
   private JScrollPane _mantisIssuesPane;
   private JButton _goButton;
+  private JCheckBox _filterResolvedCheckBox;
 
   private MantiBugzController _controller;
+  private static final int RESOLVED_STATE = 80;
 
   public MainForm(MantiBugzController controller) {
     _controller = controller;
@@ -68,6 +71,12 @@ public class MainForm {
     _goButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         runFogBugzImport();
+      }
+    });
+
+    _filterResolvedCheckBox.addActionListener(new ActionListener() {
+      public void actionPerformed(ActionEvent e) {
+        filterMantisIssues();
       }
     });
   }
@@ -166,6 +175,9 @@ public class MainForm {
         controller.getFogBugzConnection().setCurrentProject(selectedProject);
       }
     }
+
+    boolean filterMantisIssues = _filterResolvedCheckBox.isSelected();
+    controller.setFilterMantisIssues(filterMantisIssues);
   }
 
   public boolean isModified() {
@@ -261,13 +273,30 @@ public class MainForm {
     try {
 
       getRootContainer().getParent().setCursor(hourglassCursor);
+      ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
+
       IProject selectedProject = _controller.getMantisConnection().getCurrentProject();
 
       if (selectedProject != null) {
-        List<IIssue> issues = _controller.getMantisConnection().getIssues(selectedProject);
+        List<IIssue> projectIssues = _controller.getMantisConnection().getIssues(selectedProject);
 
-        ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
-        model.setIssues(issues);
+        if (_controller.isFilterMantisIssues()) {
+          List<IIssue> filteredIssues = new ArrayList<IIssue>();
+
+          for (int index = 0; index < projectIssues.size(); index++) {
+            IIssue issue = projectIssues.get(index);
+
+            if (issue.getStatus().getId() < RESOLVED_STATE) {
+              filteredIssues.add(issue);
+            }
+          }
+
+          model.setIssues(filteredIssues);
+        } else {
+
+          model.setIssues(projectIssues);
+        }
+
         _mantisIssuesPane.setViewportView(_mantisIssues);
       }
 
@@ -292,7 +321,7 @@ public class MainForm {
 
   private void runFogBugzImport() {
     getData(_controller);
-    
+
     // To avoid re-fetching them we just use the ones currently in the table model
     ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
     _controller.setSourceIssues(model.getIssues());
@@ -302,6 +331,11 @@ public class MainForm {
     dialog.pack();
     dialog.setVisible(true);
 
+  }
+
+  private void filterMantisIssues() {
+    getData(_controller);
+    updateIssuesTable();
   }
 
 }

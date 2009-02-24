@@ -83,7 +83,7 @@ public class MantisConnection implements IConnection {
       throw new IllegalArgumentException("Project cannot be null or empty");
     }
 
-    IIssue issues[] = this._session.getProjectIssues(project.getId());
+    IIssue issues[] = this._session.getProjectIssues(project.getId(), 1000);
 
     if (issues != null && issues.length > 0) {
       return Arrays.asList(issues);

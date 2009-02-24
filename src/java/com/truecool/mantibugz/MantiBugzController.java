@@ -16,6 +16,7 @@ public class MantiBugzController {
   private MantisConnection _mantisConnection;
   private FogBugzConnection _fogBugzConnection;
   private List<IIssue> _sourceIssues;
+  private boolean _filterMantisIssues;
 
 
   public MantisConnection getMantisConnection() {
@@ -40,5 +41,13 @@ public class MantiBugzController {
 
   public void setSourceIssues(List<IIssue> sourceIssues) {
     _sourceIssues = sourceIssues;
+  }
+
+  public boolean isFilterMantisIssues() {
+    return _filterMantisIssues;
+  }
+
+  public void setFilterMantisIssues(boolean filterMantisIssues) {
+    _filterMantisIssues = filterMantisIssues;
   }
 }

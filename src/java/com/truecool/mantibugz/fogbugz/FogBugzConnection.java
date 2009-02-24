@@ -8,10 +8,14 @@ import org.mantisbt.connect.model.IIssue;
 import org.mantisbt.connect.model.INote;
 import org.mantisbt.connect.model.IProject;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,14 +57,13 @@ public class FogBugzConnection implements IConnection {
       throw new IllegalArgumentException("User password cannot be null or empty");
     }
 
-    String apiURL = this._baseURL + "/" + API_XML_PATH;
-    Map response = executeSimplecommand(apiURL);
+    Map response = executeGetCommand(this._baseURL, API_XML_PATH);
 
     this._realURL = this._baseURL + "/" + response.get("url");
 
-    String loginURL = this._realURL + "cmd=logon&email=" + _uid + "&password=" + this._pwd;
+    String loginURL = "cmd=logon&email=" + _uid + "&password=" + this._pwd;
 
-    response = executeSimplecommand(loginURL);
+    response = executePostCommand(this._realURL, loginURL);
 
     this._token = (String) response.get("token");
 
@@ -73,8 +76,8 @@ public class FogBugzConnection implements IConnection {
   }
 
   public void disconnect() throws Exception {
-    String logoffURL = this._realURL + "cmd=logoff&token=" + this._token;
-    executeSimplecommand(logoffURL);
+    String logoffURL = "cmd=logoff&token=" + this._token;
+    executePostCommand(this._realURL, logoffURL);
     this._connected = false;
   }
 
@@ -109,6 +112,8 @@ public class FogBugzConnection implements IConnection {
     INote notes[] = issue.getNotes();
     StringBuffer notesText = new StringBuffer();
 
+    notesText.append(issue.getDescription()).append("\n");
+
     for (int index = 0; index < notes.length; index++) {
       INote note = notes[index];
       notesText.append(note.getText()).append("\n");
@@ -123,12 +128,7 @@ public class FogBugzConnection implements IConnection {
         // Add mapping for version
         "&sEvent=" + URLEncoder.encode(notesText.toString(), "UTF-8");
 
-    String url = this._realURL + command;
-    Map commandResult = executeSimplecommand(url);
-
-    if (commandResult != null) {
-      // @todo - do some stuff here.
-    }
+    Map commandResult = executePostCommand(this._realURL, command);
 
     return result;
   }
@@ -170,11 +170,55 @@ public class FogBugzConnection implements IConnection {
     _pwd = pwd;
   }
 
-  protected Map<String, String> executeSimplecommand(String url) throws SAXException, IOException {
-    Map map = new HashMap();
+  protected Map<String, String> executeGetCommand(String baseURL, String command) throws Exception {
+    URL serverURL = new URL(baseURL + "/" + command);
+
+    BufferedReader reader = new BufferedReader(new InputStreamReader(serverURL.openStream()));
+
+    StringBuffer response = new StringBuffer();
+
+    String line;
+    
+    while ((line = reader.readLine()) != null) {
+      response.append(line).append("\n");
+    }
+    reader.close();
+
+    return parseString(response.toString());
+  }
+
+
+  protected Map<String, String> executePostCommand(String baseURL, String command) throws Exception {
+    URL serverURL = new URL(baseURL);
+    URLConnection connection = serverURL.openConnection();
+    connection.setDoOutput(true);    
+
+    OutputStreamWriter writer = new OutputStreamWriter(connection.getOutputStream());
+    writer.write(command);
+    writer.flush();
+
+    StringBuffer response = new StringBuffer();
+    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+
+    String line;
+
+    while ((line = reader.readLine()) != null) {
+      response.append(line).append("\n");
+    }
+    writer.close();
+    reader.close();
+
+    return parseString(response.toString());
+  }
+
+  protected Map<String, String> parseString(String input) throws SAXException, IOException {
+    Map<String, String> map = new HashMap<String, String>();
+
+    InputStream in = new ByteArrayInputStream(input.getBytes("UTF-8") );
+    InputSource source = new InputSource(in);
 
     DOMParser parser = new DOMParser();
-    parser.parse(url);
+    parser.parse(source);
 
     Document document = parser.getDocument();
 
@@ -185,7 +229,20 @@ public class FogBugzConnection implements IConnection {
 
       while (node != null) {
         if (node.getNodeName() != null) {
-          map.put(node.getNodeName(), node.getTextContent());
+          String value = node.getTextContent();
+
+          if (value == null || value.length() == 0) {
+            NamedNodeMap attributes = node.getAttributes();
+
+            if (attributes != null) {
+              for (int index = 0; index < attributes.getLength(); index++) {
+                Node attributeNode = attributes.item(index);
+                map.put(attributeNode.getNodeName(), attributeNode.getNodeValue());
+              }
+            }
+          } else {
+            map.put(node.getNodeName(), value);
+          }
         }
         node = node.getNextSibling();
       }

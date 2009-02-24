@@ -74,7 +74,6 @@ public class TranslationProgressDialogForm extends JDialog {
 
   private void onOK() {
     doImport();
-    dispose();
   }
 
   private void onCancel() {
@@ -82,36 +81,52 @@ public class TranslationProgressDialogForm extends JDialog {
   }
 
   private void doImport() {
-    java.util.List<IIssue> issues = _controller.getSourceIssues();
+    final java.util.List<IIssue> issues = _controller.getSourceIssues();
 
     if (issues != null && issues.size() > 0) {
+      ImportRunner runner = new ImportRunner(issues);
+      Thread runnerThread = new Thread(runner);
+      runnerThread.start();
+    } else {
+      JOptionPane.showMessageDialog(null, "No issues to import.");
+    }
+  }
+
+  private class ImportRunner implements Runnable {
+    private java.util.List<IIssue> _issues;
+
+    private ImportRunner(java.util.List<IIssue> issues) {
+      _issues = issues;
+    }
+
+    public void run() {
+      final IProject fogBugzProject = _controller.getFogBugzConnection().getCurrentProject();
+      final MantiBugzController controller = _controller;
       int index = 0;
 
       try {
-        IProject fogBugzProject = _controller.getFogBugzConnection().getCurrentProject();
 
-        for (index = 0; index < issues.size(); index++) {
-          IIssue issue = issues.get(index);
-          _controller.getFogBugzConnection().createNewIssue(issue, fogBugzProject);
-          final String message = "Imported " + index + " of " + issues.size() + " issues...";
+        _buttonOK.setEnabled(false);
+        _buttonCancel.setEnabled(false);
 
-          SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-              _status.setText(message);
-            }
-          });
+        for (index = 0; index < _issues.size(); index++) {
+          final IIssue issue = _issues.get(index);
+          controller.getFogBugzConnection().createNewIssue(issue, fogBugzProject);
+          final String message = "Imported " + index + " of " + _issues.size() + " issues...";
 
+          _status.setText(message);
+          repaint();
         }
 
         JOptionPane.showMessageDialog(null, "Import complete; " + index + " issues were imported.");
-
+        dispose();
       } catch (Exception e) {
-        // @todo add logging
+        e.printStackTrace();
         JOptionPane.showMessageDialog(null, "Import failed after importing " + index + " issues.");
+      } finally {
+        _buttonOK.setEnabled(true);
+        _buttonCancel.setEnabled(true);
       }
-
-    } else {
-      JOptionPane.showMessageDialog(null, "No issues to import.");
     }
   }
 

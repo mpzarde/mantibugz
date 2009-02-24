@@ -299,20 +299,44 @@
           </scrollpane>
         </children>
       </grid>
-      <grid id="88c6b" layout-manager="BorderLayout" hgap="0" vgap="0">
+      <grid id="88c6b" layout-manager="FormLayout">
+        <rowspec value="center:d:noGrow"/>
+        <colspec value="fill:max(d;4px):noGrow"/>
+        <colspec value="left:4dlu:noGrow"/>
+        <colspec value="fill:130px:grow"/>
+        <colspec value="left:4dlu:noGrow"/>
+        <colspec value="fill:d:noGrow"/>
         <constraints>
-          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
+          <grid row="2" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="8" fill="2" indent="0" use-parent-layout="false"/>
           <forms defaultalign-horz="false"/>
         </constraints>
         <properties/>
         <border type="none"/>
         <children>
-          <component id="26bdc" class="javax.swing.JButton" binding="_goButton" default-binding="true">
-            <constraints border-constraint="Center"/>
+          <component id="2260f" class="javax.swing.JButton" binding="_goButton" default-binding="true">
+            <constraints>
+              <grid row="0" column="4" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
             <properties>
               <text value="Go"/>
             </properties>
           </component>
+          <component id="6530e" class="javax.swing.JCheckBox" binding="_filterResolvedCheckBox" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
+              <forms/>
+            </constraints>
+            <properties>
+              <text value="Ignore Closed and Resolved"/>
+            </properties>
+          </component>
+          <hspacer id="a9206">
+            <constraints>
+              <grid row="0" column="2" row-span="1" col-span="1" vsize-policy="1" hsize-policy="6" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
+              <forms defaultalign-horz="false"/>
+            </constraints>
+          </hspacer>
         </children>
       </grid>
     </children>
