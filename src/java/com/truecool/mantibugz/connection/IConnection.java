@@ -1,9 +1,8 @@
 package com.truecool.mantibugz.connection;
 
-import org.mantisbt.connect.model.IProject;
-import org.mantisbt.connect.model.IIssue;
-import org.mantisbt.connect.model.INote;
 import org.mantisbt.connect.model.IAccount;
+import org.mantisbt.connect.model.IIssue;
+import org.mantisbt.connect.model.IProject;
 
 import java.util.List;
 
@@ -19,6 +18,6 @@ public interface IConnection {
   public List<IProject>getProjects() throws Exception;
   public List<IIssue>getIssues(IProject project) throws Exception;
   public List<IAccount>getUsers(IProject project) throws Exception;
-  public Result createNewIssue(IIssue issue) throws Exception;
+  public Result createNewIssue(IIssue issue, IProject project) throws Exception;
   public boolean isConnected();
 }

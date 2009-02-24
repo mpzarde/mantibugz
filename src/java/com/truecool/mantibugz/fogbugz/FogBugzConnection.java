@@ -5,12 +5,14 @@ import com.truecool.mantibugz.connection.Result;
 import org.apache.xerces.parsers.DOMParser;
 import org.mantisbt.connect.model.IAccount;
 import org.mantisbt.connect.model.IIssue;
+import org.mantisbt.connect.model.INote;
 import org.mantisbt.connect.model.IProject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +64,11 @@ public class FogBugzConnection implements IConnection {
 
     this._token = (String) response.get("token");
 
-    this._connected = true;
+    if (this._token != null) {
+      this._connected = true;
+    } else {
+      this._connected = false;
+    }
 
   }
 
@@ -97,8 +103,34 @@ public class FogBugzConnection implements IConnection {
     return null;  //To change body of implemented methods use File | Settings | File Templates.
   }
 
-  public Result createNewIssue(IIssue issue) throws Exception {
-    return null;  //To change body of implemented methods use File | Settings | File Templates.
+  public Result createNewIssue(IIssue issue, IProject project) throws Exception {
+    Result result = Result.getDefaultResult();
+
+    INote notes[] = issue.getNotes();
+    StringBuffer notesText = new StringBuffer();
+
+    for (int index = 0; index < notes.length; index++) {
+      INote note = notes[index];
+      notesText.append(note.getText()).append("\n");
+    }
+
+    String command = "token=" + this._token + "&cmd=new" +
+        "&sTitle=" + URLEncoder.encode(issue.getSummary(), "UTF-8") +
+        "&ixProject=" + project.getId() +
+        // Add mapping for area - category in mantis
+        // Add mapping for assigned
+        // Add mapping for priority
+        // Add mapping for version
+        "&sEvent=" + URLEncoder.encode(notesText.toString(), "UTF-8");
+
+    String url = this._realURL + command;
+    Map commandResult = executeSimplecommand(url);
+
+    if (commandResult != null) {
+      // @todo - do some stuff here.
+    }
+
+    return result;
   }
 
   public IProject getCurrentProject() {
@@ -147,10 +179,10 @@ public class FogBugzConnection implements IConnection {
     Document document = parser.getDocument();
 
     Node node = document.getFirstChild().getFirstChild();
-    
+
     while (node != null) {
       Node parentNode = node;
-      
+
       while (node != null) {
         if (node.getNodeName() != null) {
           map.put(node.getNodeName(), node.getTextContent());
@@ -184,7 +216,7 @@ public class FogBugzConnection implements IConnection {
         if (node.getNodeName() != null) {
           map.put(node.getNodeName(), node.getTextContent());
         }
-        
+
         node = node.getNextSibling();
       }
       list.add(map);

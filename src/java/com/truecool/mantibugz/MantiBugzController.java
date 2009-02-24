@@ -2,6 +2,9 @@ package com.truecool.mantibugz;
 
 import com.truecool.mantibugz.fogbugz.FogBugzConnection;
 import com.truecool.mantibugz.mantis.MantisConnection;
+import org.mantisbt.connect.model.IIssue;
+
+import java.util.List;
 
 /**
  * Created by IntelliJ IDEA.
@@ -12,6 +15,7 @@ import com.truecool.mantibugz.mantis.MantisConnection;
 public class MantiBugzController {
   private MantisConnection _mantisConnection;
   private FogBugzConnection _fogBugzConnection;
+  private List<IIssue> _sourceIssues;
 
 
   public MantisConnection getMantisConnection() {
@@ -30,4 +34,11 @@ public class MantiBugzController {
     return _fogBugzConnection;
   }
 
+  public List<IIssue> getSourceIssues() {
+    return _sourceIssues;
+  }
+
+  public void setSourceIssues(List<IIssue> sourceIssues) {
+    _sourceIssues = sourceIssues;
+  }
 }

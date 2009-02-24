@@ -64,6 +64,7 @@ public class MainForm {
         });
       }
     });
+
     _goButton.addActionListener(new ActionListener() {
       public void actionPerformed(ActionEvent e) {
         runFogBugzImport();
@@ -110,6 +111,61 @@ public class MainForm {
     controller.getFogBugzConnection().setBaseURL(_fogBugzURL.getText());
     controller.getFogBugzConnection().setUid(_fogBugzUid.getText());
     controller.getFogBugzConnection().setPwd(_fogBugzPwd.getText());
+
+    IProject selectedProject = null;
+    List<IProject> projects = null;
+
+    String selectedProjectName = (String) _mantisProject.getSelectedItem();
+
+    if (controller.getMantisConnection().isConnected() && selectedProjectName != null) {
+
+      try {
+        projects = controller.getMantisConnection().getProjects();
+      } catch (Exception e) {
+        // @todo add logging
+        JOptionPane.showMessageDialog(null, "An error occured fetching the Mantis projects.");
+        projects = null;
+      }
+
+      if (projects != null && projects.size() > 0) {
+
+        for (int index = 0; index < projects.size(); index++) {
+          IProject project = projects.get(index);
+          if (selectedProjectName.equals(project.getName())) {
+            selectedProject = project;
+            break;
+          }
+        }
+
+        controller.getMantisConnection().setCurrentProject(selectedProject);
+      }
+    }
+
+    selectedProject = null;
+    selectedProjectName = (String) _fogBugzProject.getSelectedItem();
+
+    if (controller.getFogBugzConnection().isConnected() && selectedProjectName != null) {
+
+      try {
+        projects = controller.getFogBugzConnection().getProjects();
+      } catch (Exception e) {
+        // @todo add logging
+        JOptionPane.showMessageDialog(null, "An error occured fetching the FogBugz projects.");
+        projects = null;
+      }
+
+      if (projects != null && projects.size() > 0) {
+
+        for (int index = 0; index < projects.size(); index++) {
+          IProject project = projects.get(index);
+          if (selectedProjectName != null && selectedProjectName.equals(project.getName())) {
+            selectedProject = project;
+            break;
+          }
+        }
+        controller.getFogBugzConnection().setCurrentProject(selectedProject);
+      }
+    }
   }
 
   public boolean isModified() {
@@ -165,6 +221,10 @@ public class MainForm {
     try {
       _controller.getFogBugzConnection().connect();
 
+      if (!_controller.getFogBugzConnection().isConnected()) {
+        throw new IllegalStateException("Not connected to FogBugz");
+      }
+
       List<IProject> projects = _controller.getFogBugzConnection().getProjects();
 
       final DefaultComboBoxModel projectsModel = new DefaultComboBoxModel();
@@ -201,40 +261,46 @@ public class MainForm {
     try {
 
       getRootContainer().getParent().setCursor(hourglassCursor);
+      IProject selectedProject = _controller.getMantisConnection().getCurrentProject();
 
-      String selectedProjectName = (String) _mantisProject.getSelectedItem();
-      IProject selectedProject = null;
+      if (selectedProject != null) {
+        List<IIssue> issues = _controller.getMantisConnection().getIssues(selectedProject);
 
-      List<IProject> projects = _controller.getMantisConnection().getProjects();
-
-      if (projects != null && projects.size() > 0) {
-
-        for (int index = 0; index < projects.size(); index++) {
-          IProject project = projects.get(index);
-          if (selectedProjectName.equals(project.getName())) {
-            selectedProject = project;
-            break;
-          }
-        }
-
-        if (selectedProject != null) {
-          List<IIssue> issues = _controller.getMantisConnection().getIssues(selectedProject);
-
-          ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
-          model.setIssues(issues);
-          _mantisIssuesPane.setViewportView(_mantisIssues);
-        }
+        ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
+        model.setIssues(issues);
+        _mantisIssuesPane.setViewportView(_mantisIssues);
       }
 
-    } catch (Exception e) {
+    }
+
+    catch (
+        Exception e
+        )
+
+    {
       // @todo add logging
       JOptionPane.showMessageDialog(null, "An error occured trying to retrieve Mantis project issues, pls check your settings and try again.");
-    } finally {
+    }
+
+    finally
+
+    {
       getRootContainer().getParent().setCursor(normalCursor);
     }
+
   }
 
   private void runFogBugzImport() {
+    getData(_controller);
+    
+    // To avoid re-fetching them we just use the ones currently in the table model
+    ProjectIssuesTableModel model = (ProjectIssuesTableModel) _mantisIssues.getModel();
+    _controller.setSourceIssues(model.getIssues());
+
+    TranslationProgressDialogForm dialog = new TranslationProgressDialogForm(_controller);
+    dialog.centerOnScreen();
+    dialog.pack();
+    dialog.setVisible(true);
 
   }
 
