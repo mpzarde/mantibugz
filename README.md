@@ -5,6 +5,11 @@ MantiBugz is fully functional but there are some things that could be improved.
 
 We used it AS-IS to import 500 Mantis tickets+ into our FogBugz installation.
 
+Requires
+========
+
+Mantis Connect Java API - http://sourceforge.net/projects/mantisconnect/
+
 Running It
 ==========
 
